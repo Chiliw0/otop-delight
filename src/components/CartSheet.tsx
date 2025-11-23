@@ -6,9 +6,10 @@ import {
   SheetFooter,
 } from "./ui/sheet";
 import { useCart } from "@/contexts/CartContext";
-import { Button } from "./ui/button";
+import { Button } from "@/components/ui/button";
 import { Minus, Plus, Trash2 } from "lucide-react";
 import { ScrollArea } from "./ui/scroll-area";
+import { useNavigate } from "react-router-dom";
 
 interface CartSheetProps {
   open: boolean;
@@ -17,10 +18,17 @@ interface CartSheetProps {
 
 const CartSheet = ({ open, onOpenChange }: CartSheetProps) => {
   const { cart, removeFromCart, updateQuantity, getCartTotal } = useCart();
+  const navigate = useNavigate();
+
+  const handleCheckout = () => {
+    onOpenChange(false);
+    navigate("/checkout");
+  };
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="flex w-full flex-col sm:max-w-lg">
+      {/* ปรับความกว้างตรงนี้จาก sm:max-w-lg เป็น sm:max-w-xl หรือ sm:max-w-2xl */}
+      <SheetContent className="flex w-full flex-col sm:max-w-xl">
         <SheetHeader>
           <SheetTitle>ตะกร้าสินค้า ({cart.length} รายการ)</SheetTitle>
         </SheetHeader>
@@ -70,7 +78,7 @@ const CartSheet = ({ open, onOpenChange }: CartSheetProps) => {
                           </Button>
                         </div>
                         <div className="text-right">
-                          <div className="font-semibold text-primary">
+                          <div className="font-semibold text-primary whitespace-nowrap">
                             ฿{(item.price * item.quantity).toLocaleString()}
                           </div>
                           <Button
@@ -89,16 +97,19 @@ const CartSheet = ({ open, onOpenChange }: CartSheetProps) => {
               </div>
             </ScrollArea>
 
-            <SheetFooter className="flex-col gap-4">
-              <div className="flex items-center justify-between text-lg font-semibold">
-                <span>ยอดรวม:</span>
-                <span className="text-primary">
-                  ฿{getCartTotal().toLocaleString()}
-                </span>
+            {/* ปรับส่วน Footer */}
+            <SheetFooter className="mt-4">
+              <div className="flex w-full flex-col gap-4 border-t pt-4">
+                <div className="flex items-center justify-between text-lg font-semibold">
+                  <span className="whitespace-nowrap">ยอดรวมทั้งหมด:</span>
+                  <span className="text-primary whitespace-nowrap">
+                    ฿{getCartTotal().toLocaleString()}
+                  </span>
+                </div>
+                <Button className="w-full" size="lg" onClick={handleCheckout}>
+                  ชำระเงิน
+                </Button>
               </div>
-              <Button className="w-full" size="lg">
-                ดำเนินการชำระเงิน
-              </Button>
             </SheetFooter>
           </>
         )}

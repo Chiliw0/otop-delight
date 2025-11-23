@@ -1,4 +1,4 @@
-import { ShoppingCart, Search } from "lucide-react";
+import { ShoppingCart } from "lucide-react";
 import { Button } from "./ui/button";
 import { useCart } from "@/contexts/CartContext";
 import { Link } from "react-router-dom";
