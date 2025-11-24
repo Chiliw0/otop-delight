@@ -43,7 +43,6 @@ const Checkout = () => {
     e.preventDefault();
     setIsProcessing(true);
 
-    // เตรียมข้อมูล
     const orderData: OrderData = {
       customer: formData,
       items: cart.map((item) => ({
@@ -57,12 +56,19 @@ const Checkout = () => {
     };
 
     try {
-      // ส่งข้อมูลไป API (Mock)
-      await createOrder(orderData);
+      // รับค่า orderId ที่ return กลับมา
+      const result = await createOrder(orderData);
       
       toast.success("สั่งซื้อสำเร็จ! ขอบคุณที่ใช้บริการ");
       clearCart();
-      navigate("/");
+      
+      // เปลี่ยนจาก navigate("/") เป็นการส่งข้อมูลไปหน้า order-success
+      navigate("/order-success", { 
+        state: { 
+          order: orderData, 
+          orderId: result.orderId 
+        } 
+      });
       
     } catch (error) {
       console.error(error);

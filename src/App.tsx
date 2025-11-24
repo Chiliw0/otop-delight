@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import ProductDetail from "./pages/ProductDetail";
 import Checkout from "./pages/Checkout";
 import NotFound from "./pages/NotFound";
+import OrderSuccess from "./pages/OrderSuccess"; // เพิ่ม import
 
 const queryClient = new QueryClient();
 
@@ -22,6 +23,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/product/:id" element={<ProductDetail />} />
             <Route path="/checkout" element={<Checkout />} />
+            <Route path="/order-success" element={<OrderSuccess />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
