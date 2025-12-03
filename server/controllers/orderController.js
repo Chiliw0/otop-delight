@@ -1,15 +1,23 @@
 import mongoose from 'mongoose';
-import Product from '../models/Product.js'; // อย่าลืม .js
-import Order from '../models/Order.js';     // อย่าลืม .js
+import Product from '../models/Product.js';
+import Order from '../models/Order.js';
 
 export const createOrder = async (req, res) => {
   const session = await mongoose.startSession();
   session.startTransaction();
 
   try {
-    const { customer, items, total } = req.body;
+    const { customer, items, total, subtotal, shippingCost, discount } = req.body;
+    
+    // กำหนดสถานะตามวิธีชำระเงิน
+    let orderStatus = 'paid';
+    if (customer.paymentMethod === 'cod') {
+        orderStatus = 'unpaid'; // เก็บปลายทาง = ยังไม่จ่าย
+    }
+
     const orderItems = [];
 
+    // ตัด Stock
     for (const item of items) {
       const product = await Product.findOneAndUpdate(
         { _id: item._id, stock: { $gte: item.quantity } },
@@ -29,10 +37,15 @@ export const createOrder = async (req, res) => {
       });
     }
 
+    // สร้าง Order
     const newOrder = new Order({
       customer,
       items: orderItems,
+      subtotal,
+      shippingCost,
+      discount,
       total,
+      status: orderStatus,
       date: new Date()
     });
 

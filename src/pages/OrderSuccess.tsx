@@ -5,18 +5,14 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { CheckCircle, Printer, Home, Download } from "lucide-react";
-// หากต้องการเซฟเป็นรูปภาพ ต้องลง html2canvas เพิ่ม: npm install html2canvas
-// import html2canvas from "html2canvas"; 
 
 const OrderSuccess = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const receiptRef = useRef<HTMLDivElement>(null);
 
-  // รับข้อมูลที่ส่งมาจากหน้า Checkout
-  const { order, orderId } = location.state as { order: OrderData; orderId: string } || {};
+  const { order, orderId } = location.state as { order: any; orderId: string } || {};
 
-  // ถ้าไม่มีข้อมูล (เข้าหน้านี้โดยตรง) ให้เด้งกลับหน้าแรก
   useEffect(() => {
     if (!order) {
       navigate("/");
@@ -29,83 +25,62 @@ const OrderSuccess = () => {
     window.print();
   };
 
-  // ฟังก์ชันสำหรับเซฟเป็นรูปภาพ (ต้องติดตั้ง html2canvas ก่อน)
-  /*
-  const handleDownloadImage = async () => {
-    if (receiptRef.current) {
-      const canvas = await html2canvas(receiptRef.current);
-      const image = canvas.toDataURL("image/png");
-      const link = document.createElement("a");
-      link.href = image;
-      link.download = `receipt-${orderId}.png`;
-      link.click();
-    }
-  };
-  */
+  const isUnpaid = order.status === 'unpaid';
 
   return (
     <div className="min-h-screen bg-muted/50 py-8">
       <div className="container mx-auto px-4">
         
-        {/* ส่วนหัวแสดงสถานะ (ซ่อนตอนปริ้น) */}
         <div className="mb-8 text-center print:hidden">
           <div className="mb-4 flex justify-center">
-            <CheckCircle className="h-16 w-16 text-green-500" />
+             <CheckCircle className={`h-16 w-16 ${isUnpaid ? 'text-yellow-500' : 'text-green-500'}`} />
           </div>
-          <h1 className="mb-2 text-3xl font-bold text-foreground">สั่งซื้อสำเร็จ!</h1>
-          <p className="text-muted-foreground">ขอบคุณที่อุดหนุนสินค้าชุมชน OTOP</p>
+          <h1 className="mb-2 text-3xl font-bold text-foreground">
+              {isUnpaid ? "บันทึกคำสั่งซื้อสำเร็จ" : "สั่งซื้อสำเร็จ!"}
+          </h1>
+          <p className="text-muted-foreground">
+              {isUnpaid ? "กรุณาเตรียมเงินสดสำหรับชำระปลายทาง (COD)" : "ขอบคุณที่อุดหนุนสินค้าชุมชน OTOP"}
+          </p>
         </div>
 
-        {/* ใบเสร็จ */}
         <div className="mx-auto max-w-2xl">
           <div ref={receiptRef} className="bg-white text-black shadow-lg print:shadow-none">
             <Card className="border-0 sm:border">
-              <CardHeader className="border-b pb-4 text-center">
-                <CardTitle className="text-2xl font-bold">ใบเสร็จรับเงิน / RECEIPT</CardTitle>
-                <div className="mt-2 text-sm text-muted-foreground">
-                  <p>OTOP Thailand Delights</p>
-                  <p>เลขที่คำสั่งซื้อ: {orderId}</p>
-                  <p>วันที่: {new Date(order.date).toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
+              <CardHeader className="text-center border-b pb-6">
+                <CardTitle className="text-2xl font-bold">OTOP DELIGHT</CardTitle>
+                <div className="text-sm text-muted-foreground mt-2">
+                  ใบเสร็จรับเงิน / Receipt<br />
+                  Order ID: {orderId}
+                </div>
+                <div className="text-sm text-muted-foreground mt-1">
+                  วันที่: {new Date(order.date).toLocaleString('th-TH')}
                 </div>
               </CardHeader>
               <CardContent className="p-6 space-y-6">
-                
-                {/* ข้อมูลลูกค้า */}
-                <div className="grid gap-2 text-sm">
-                  <h3 className="font-semibold">ข้อมูลผู้ซื้อ</h3>
-                  <div className="grid grid-cols-[100px_1fr]">
-                    <span className="text-muted-foreground">ชื่อ-นามสกุล:</span>
-                    <span>{order.customer.name}</span>
-                    <span className="text-muted-foreground">เบอร์โทรศัพท์:</span>
-                    <span>{order.customer.phone}</span>
-                    <span className="text-muted-foreground">ที่อยู่จัดส่ง:</span>
-                    <span>
-                      {order.customer.address} จ.{order.customer.province} {order.customer.zipcode}
-                    </span>
+                <div className="grid sm:grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <h3 className="font-semibold mb-1">ผู้สั่งซื้อ</h3>
+                    <p>{order.customer.name}</p>
+                    <p>{order.customer.phone}</p>
+                  </div>
+                  <div className="sm:text-right">
+                    <h3 className="font-semibold mb-1">จัดส่งที่</h3>
+                    <p className="whitespace-pre-wrap">{order.customer.address}</p>
                   </div>
                 </div>
 
                 <Separator />
 
-                {/* รายการสินค้า */}
-                <div>
-                  <h3 className="mb-4 font-semibold">รายการสินค้า</h3>
-                  <div className="space-y-3">
-                    {/* Header ตาราง */}
-                    <div className="grid grid-cols-12 gap-2 text-xs font-medium text-muted-foreground md:text-sm">
-                      <div className="col-span-6">สินค้า</div>
-                      <div className="col-span-2 text-center">จำนวน</div>
-                      <div className="col-span-2 text-right">ราคา/หน่วย</div>
-                      <div className="col-span-2 text-right">รวม</div>
-                    </div>
-                    
-                    {/* รายการ */}
-                    {order.items.map((item, index) => (
-                      <div key={index} className="grid grid-cols-12 gap-2 text-sm">
-                        <div className="col-span-6 font-medium">{item.name}</div>
-                        <div className="col-span-2 text-center">x{item.quantity}</div>
-                        <div className="col-span-2 text-right">฿{item.price.toLocaleString()}</div>
-                        <div className="col-span-2 text-right font-medium">฿{(item.price * item.quantity).toLocaleString()}</div>
+                <div className="space-y-4">
+                  <h3 className="font-semibold">รายการสินค้า</h3>
+                  <div className="space-y-2">
+                    {order.items.map((item: any, index: number) => (
+                      <div key={index} className="flex justify-between text-sm">
+                        <div className="flex gap-2">
+                          <span className="text-muted-foreground w-6 text-center">{item.quantity}x</span>
+                          <span>{item.name}</span>
+                        </div>
+                        <span>฿{(item.price * item.quantity).toLocaleString()}</span>
                       </div>
                     ))}
                   </div>
@@ -113,65 +88,66 @@ const OrderSuccess = () => {
 
                 <Separator />
 
-                {/* สรุปยอดเงิน */}
-                <div className="flex flex-col gap-2">
-                  <div className="flex justify-between text-xl font-bold">
-                    <span>ยอดรวมทั้งสิ้น</span>
-                    <span className="text-primary">฿{order.total.toLocaleString()}</span>
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">รวมราคาสินค้า (Subtotal)</span>
+                    <span>฿{order.subtotal?.toLocaleString()}</span>
+                  </div>
+                  
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">
+                        ค่าจัดส่ง ({order.customer?.shippingMethod === 'express' ? 'EMS' : 'ธรรมดา'})
+                    </span>
+                    <span>฿{order.shippingCost?.toLocaleString()}</span>
+                  </div>
+
+                  {order.discount > 0 && (
+                    <div className="flex justify-between text-sm text-emerald-600">
+                        <span>ส่วนลดคูปอง</span>
+                        <span>-฿{order.discount?.toLocaleString()}</span>
+                    </div>
+                  )}
+                  
+                  <Separator className="my-2" />
+
+                  <div className="flex justify-between items-end">
+                    <span className="font-bold text-lg">ยอดสุทธิ</span>
+                    <div className="text-right">
+                        <div className="text-2xl font-bold text-primary">฿{order.total.toLocaleString()}</div>
+                        <div className={`text-xs font-medium px-2 py-1 rounded-full inline-block mt-1 ${isUnpaid ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'}`}>
+                            {isUnpaid ? 'รอชำระเงิน' : 'ชำระเงินแล้ว'}
+                        </div>
+                    </div>
                   </div>
                 </div>
+
               </CardContent>
-              <CardFooter className="justify-center border-t bg-muted/10 py-6 text-center text-sm text-muted-foreground">
-                <p>ขอบคุณที่ใช้บริการ OTOP Thailand<br/>สินค้าจะถูกจัดส่งภายใน 3-5 วันทำการ</p>
+              <CardFooter className="bg-muted/50 p-4 text-center text-xs text-muted-foreground">
+                <p className="w-full">ขอบคุณที่สนับสนุนสินค้าภูมิปัญญาไทย</p>
               </CardFooter>
             </Card>
           </div>
 
-          {/* ปุ่ม Action (ซ่อนตอนปริ้น) */}
           <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:justify-center print:hidden">
             <Button variant="outline" className="gap-2" onClick={() => navigate("/")}>
-              <Home className="h-4 w-4" />
-              กลับหน้าหลัก
+              <Home className="h-4 w-4" /> กลับหน้าหลัก
             </Button>
             <Button className="gap-2" onClick={handlePrint}>
-              <Printer className="h-4 w-4" />
-              พิมพ์ / บันทึกเป็น PDF
+              <Printer className="h-4 w-4" /> พิมพ์ใบเสร็จ
             </Button>
-            {/* ปุ่มสำหรับ html2canvas ถ้าต้องการใช้
-            <Button variant="secondary" className="gap-2" onClick={handleDownloadImage}>
-              <Download className="h-4 w-4" />
-              บันทึกเป็นรูปภาพ
-            </Button>
-            */}
           </div>
         </div>
       </div>
 
-      {/* Style สำหรับการพิมพ์ */}
       <style>{`
         @media print {
-          body * {
-            visibility: hidden;
-          }
-          #root {
-            margin: 0;
-            padding: 0;
-          }
-          .print\\:hidden {
-            display: none !important;
-          }
-          /* แสดงเฉพาะส่วนใบเสร็จ */
+          body * { visibility: hidden; }
+          #root { margin: 0; padding: 0; }
+          .print\\:hidden { display: none !important; }
           div[class*="bg-white"] {
-            visibility: visible;
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 100%;
-            box-shadow: none;
+            visibility: visible; position: absolute; left: 0; top: 0; width: 100%; box-shadow: none;
           }
-          div[class*="bg-white"] * {
-            visibility: visible;
-          }
+          div[class*="bg-white"] * { visibility: visible; }
         }
       `}</style>
     </div>

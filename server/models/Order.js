@@ -7,7 +7,8 @@ const orderSchema = new mongoose.Schema({
     address: String,
     province: String,
     zipcode: String,
-    shippingMethod: String
+    shippingMethod: String,
+    paymentMethod: String // เก็บวิธีชำระเงิน (card, wallet, cod)
   },
   items: [{
     productId: { type: mongoose.Schema.Types.ObjectId, ref: 'Product' },
@@ -15,8 +16,13 @@ const orderSchema = new mongoose.Schema({
     price: Number,
     quantity: Number
   }],
+  // รายละเอียดราคา
+  subtotal: { type: Number, required: true },
+  shippingCost: { type: Number, required: true },
+  discount: { type: Number, default: 0 },
   total: { type: Number, required: true },
-  status: { type: String, default: 'paid' },
+  
+  status: { type: String, default: 'pending' }, // paid, unpaid, pending
   date: { type: Date, default: Date.now }
 });
 
