@@ -36,6 +36,7 @@ export interface OrderData {
     address: string;
     province: string;
     zipcode: string;
+    shippingMethod: string;
   };
   items: {
     _id: string;
